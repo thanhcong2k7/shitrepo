@@ -1,7 +1,8 @@
-#date01 = signed date
+#Chạy các lệnh sau để cài đủ gói trước khi chạy:
 #pip install python-docx
 
-from datetime import datetime
+import datetime
+from datetime import datetime,date,timedelta
 import time
 import random
 #get user info
@@ -110,7 +111,7 @@ while boole:
 y = abs(proc_dob.year) % 100
 randomIDnum = str(0) + str(liveprov) + str(male if fm % 2 != 0 else female) + str(y if y > 10 else str(0) + str(y)) + str(random.randint(0, 99999)).rjust(6, "0")
 print(">>> ! <<<    Đây là mã CCCD fake của bạn: " + randomIDnum)
-mst = liveprov + str(random.randint(0,9999999).rjust(8,"0"))
+mst = liveprov + str(random.randint(0,9999999)).rjust(8,"0")
 addr = input(">>> Nhập địa chỉ mà bạn nghĩ ra (phải cùng tỉnh với tỉnh bạn đã chọn): ")
 def str_time_prop(start, end, time_format, prop):
     stime = time.mktime(time.strptime(start, time_format))
@@ -119,8 +120,8 @@ def str_time_prop(start, end, time_format, prop):
     return time.strftime(time_format, time.localtime(ptime))
 def random_date(start, end, prop):
     return str_time_prop(start, end, '%d/%m/%Y', prop)
-toda = datetime.date.today()
-past = toda + datetime.timedelta(days=-4*365)
+toda = date.today()
+past = toda + timedelta(days=-4*365)
 mailg = input(">>> Nhập email gậy/email cổ của bạn: ")
 
 user2 = input('>>> Nhập tên của nghệ sĩ (đầy đủ có dấu): ')
@@ -159,16 +160,23 @@ while boole2:
 y = abs(proc_dob2.year) % 100
 randomIDnum2 = str(0) + str(liveprov2) + str(male if fm2 % 2 != 0 else female) + str(y if y > 10 else str(0) + str(y)) + str(random.randint(0, 99999)).rjust(6, "0")
 print(">>> ! <<<    Đây là mã CCCD fake của nghệ sĩ: " + randomIDnum2)
-mst2 = liveprov2 + str(random.randint(0,9999999).rjust(8,"0"))
+mst2 = liveprov2 + str(random.randint(0,9999999)).rjust(8,"0")
 print(">>> ! <<<    Đây là mã số thuế fake của nghệ sĩ: " + mst2)
 
-stime = time.mktime(time.strptime(start, time_format))
+prod_name = input(">>> Nhập tên tác phẩm:")
+rel_date = input(">>> Nhập ngày phát hành tác phẩm (dd/mm/yyyy): ")
+proc_rdate = datetime.strptime(rel_date, "%d/%m/%Y")
+signed_date = None
+if proc_rdate >= datetime.strptime("30/09/2024", "%d/%m/%Y"):
+    signed_date = random_date(proc_rdate.strftime("%d/%m/%Y"), date.today(), random.random())
+else:
+    signed_date = random_date("30/09/2024", date.today().strftime('%d/%m/%Y'), random.random())
 
 #process
 from docx import Document
-doc = Document('sample.docx')
+doc = Document('./sample.docx')
 replace_word = {
-    'date': 'date signed',
+    'date': signed_date,
     'user1': user,
     'user2': user2,
     'alias': user3,
