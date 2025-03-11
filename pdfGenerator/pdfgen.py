@@ -181,7 +181,7 @@ print('\nĐợi chút nhé, tool đang tạo file...')
 proc_rdate = datetime.strptime(rel_date, "%d/%m/%Y")
 signed_date = None
 if proc_rdate >= datetime.strptime("30/09/2024", "%d/%m/%Y"):
-    signed_date = random_date(proc_rdate.strftime("%d/%m/%Y"), date.today(), random.random())
+    signed_date = random_date(rel_date, date.today(), random.random())
 else:
     signed_date = random_date("30/09/2024", date.today().strftime('%d/%m/%Y'), random.random())
 
@@ -275,8 +275,8 @@ for table in doc.tables:
             for p in cell.paragraphs:
                 replace_in_paragraph(p, replace_word)
 
-fname = 'output/' + prod_name + ' - ' + alias2
-doc.save('{fname}.docx')
+fname = prod_name + ' - ' + alias2
+doc.save(fname+'.docx')
 
 from docx2pdf import convert
-convert('{fname}.docx','{fname}.pdf')
+convert(fname+'.docx',fname+'.pdf')
