@@ -1,0 +1,9 @@
+>> Sau đây là những lỗi có thể bạn sẽ gặp khi OBF dù bạn chạy file gốc không gặp vấn đề gì!
+
+1. OBF không hổ trợ hàm [match case], nếu bạn sử dụng nó, hãy chuyển sang dùng if elif else nhé!
+
+2. [leading zeros in decimal integer literals are not permitted use an 0o prefix for octal integers] lỗi này do sử dụng ':03d', ví dụ như sau f"khanh{int(9872):03d}" (Không nhất thiết phải là :03d, có thể bạn sử dụng 1 số khác nữa, hãy chuyển sang dùng cách khác thay vì dùng dạng này nhé!)
+
+3. [invalid syntax. Perhaps you forgot a comma?] lỗi này do bạn thiếu dấu, ví dụ như print('a' 'b'), code chạy thì nó in ra 'ab' nhưng khi OBF sẽ gặp lỗi, bạn phải thêm dấu + vào để cộng 2 string lại, ví dụ như này nhé print('a' + 'b')
+
+5. [invalid decimal literal] lỗi này giống lỗi số [2] bạn nhé, có thể bạn đã sử dụng ':.2f' hoặc 1 số cái gần giống như vậy

@@ -1,15 +1,26 @@
-#Chạy các lệnh sau để cài đủ gói trước khi chạy:
-#pip install python-docx
+import subprocess
+import sys
+try:
+    import docx
+except ImportError:
+    print('Không tìm thấy python-docx! Đang tự động cài...')
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'python-docx'])
+try:
+    import docx2pdf
+except ImportError:
+    print('Không tìm thấy docx2pdf! Đang tự động cài...')
+    subprocess.check_call([sys.executable, "-m", "pip", "install", 'docx2pdf'])
 
 import datetime
 from datetime import datetime,date,timedelta
 import time
 import random
 #get user info
-print('Tool tạo PDF gậy v1.0\nĐược viết vào ngày 07/3/2025 bởi @realEtheriaa (YT)\nLưu ý: Thông tin của bạn có thể fake, nhưng thông tin tác giả phải chính xác để đảm bảo gậy đáp trên 95%! (Có thể tra Google/Wikipedia)')
+print('Tool tạo PDF gậy v1.0\nĐược viết vào ngày 11/3/2025 bởi @realEtheriaa\nLưu ý: Thông tin của bạn có thể fake, nhưng thông tin tác giả phải chính xác để đảm bảo gậy đáp trên 95%! (Có thể tra Google/Wikipedia)')
 user = input('>>> Nhập tên của bạn (đầy đủ có dấu): ')
 fm = int(input('>>> Nhập 1 = nam, 2 = nữ: '))
 dob = input('>>> Nhập ngày tháng năm sinh (dd/mm/YYYY): ')
+phone = input(">>> Số điện thoại của bạn: ")
 proc_dob = datetime.strptime(dob, "%d/%m/%Y").date()
 male=0
 female=1
@@ -122,7 +133,7 @@ def random_date(start, end, prop):
     return str_time_prop(start, end, '%d/%m/%Y', prop)
 toda = date.today()
 past = toda + timedelta(days=-4*365)
-mailg = input(">>> Nhập email gậy/email cổ của bạn: ")
+mailg = input(">>> Nhập email gậy của bạn: ")
 
 user2 = input('>>> Nhập tên của nghệ sĩ (đầy đủ có dấu): ')
 user3 = input('>>> Nhập nghệ danh của nghệ sĩ (VD: MONO, ...): ')
@@ -165,6 +176,8 @@ print(">>> ! <<<    Đây là mã số thuế fake của nghệ sĩ: " + mst2)
 
 prod_name = input(">>> Nhập tên tác phẩm:")
 rel_date = input(">>> Nhập ngày phát hành tác phẩm (dd/mm/yyyy): ")
+alias2 = input(">>> Nhập đầy đủ nghệ danh của các nghệ sĩ tham gia (VD: 'AMEE & MCK', 'Lương Quý Tuấn & Hữu Công', ...)")
+print('\nĐợi chút nhé, tool đang tạo file...')
 proc_rdate = datetime.strptime(rel_date, "%d/%m/%Y")
 signed_date = None
 if proc_rdate >= datetime.strptime("30/09/2024", "%d/%m/%Y"):
@@ -173,24 +186,97 @@ else:
     signed_date = random_date("30/09/2024", date.today().strftime('%d/%m/%Y'), random.random())
 
 #process
+#Skipping CRC checking
+import zipfile
+import tempfile
+# Override the _update_crc method with a no-op to ignore CRC errors
+def no_crc_update(self, data):
+    pass
+zipfile.ZipExtFile._update_crc = no_crc_update
+#DOCX Processing
 from docx import Document
-doc = Document('./sample.docx')
+import urllib.request
+temp = tempfile.NamedTemporaryFile()
+url = "https://fuchsia.viiic.net/sample.docx"
+# Your credentials
+username = 'ngdepchai00112'
+password = 'watafacisbluddoing'
+# Create a password manager and add your credentials
+password_mgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+password_mgr.add_password(None, url, username, password)
+
+# Create an HTTP Basic Auth handler using the password manager
+auth_handler = urllib.request.HTTPBasicAuthHandler(password_mgr)
+
+# Build an opener that will use our auth handler
+opener = urllib.request.build_opener(auth_handler)
+
+# Use the opener to fetch the URL; the credentials will be sent in the Authorization header
+with opener.open(url) as response:
+    content = response.read()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_file:
+        tmp_file.write(content)
+        temp_file_path = tmp_file.name
+doc = Document(temp_file_path)
 replace_word = {
-    'date': signed_date,
+    'date1': datetime.strptime(signed_date, "%d/%m/%Y").strftime("ngày %d tháng %m năm %Y"),
+    'date2': signed_date,
     'user1': user,
     'user2': user2,
-    'alias': user3,
+    'alias1': user3,
+    'numb1': phone,
     'cccd1': randomIDnum,
+    'cccd2': randomIDnum2,
+    'dob2': dob2,
     'mst1': mst,
     'mst2': mst2,
     'capngay1': random_date(past.strftime('%d/%m/%Y'), toda.strftime('%d/%m/%Y'), random.random()),
     'capngay2': random_date(past.strftime('%d/%m/%Y'), toda.strftime('%d/%m/%Y'), random.random()),
     'addr1': addr,
-    'email': mailg
+    'email': mailg,
+    'prod_name': prod_name,
+    'alias2': alias2
 }
-for word in replace_word:
-    for p in doc.paragraphs:
-        if p.text.find(word) >= 0:
-            p.text = p.text.replace(word, replace_word[word])
- 
-doc.save('note_demo.docx')
+
+def replace_in_paragraph(paragraph, replacements):
+    # Merge all runs into a single string to detect split placeholders
+    full_text = "".join(run.text for run in paragraph.runs)
+    
+    # Check if any placeholder exists
+    modified = False
+    for key, value in replacements.items():
+        if key in full_text:
+            full_text = full_text.replace(key, value)
+            modified = True
+    
+    if modified:
+        # Clear existing runs and add new text while retaining formatting
+        for run in paragraph.runs:
+            run.text = ""
+        new_run = paragraph.add_run(full_text)
+        # Copy font style from the first run (optional)
+        if paragraph.runs:
+            new_run.font.name = paragraph.runs[0].font.name
+            new_run.font.bold = paragraph.runs[0].font.bold
+
+# Process paragraphs
+for p in doc.paragraphs:
+    replace_in_paragraph(p, replace_word)
+
+# Process paragraphs
+for p in doc.paragraphs:
+    replace_in_paragraph(p, replace_word)
+
+# Process tables and hyperlinks
+for table in doc.tables:
+    for row in table.rows:
+        for cell in row.cells:
+            # Process cell paragraphs
+            for p in cell.paragraphs:
+                replace_in_paragraph(p, replace_word)
+
+fname = 'output/' + prod_name + ' - ' + alias2
+doc.save('{fname}.docx')
+
+from docx2pdf import convert
+convert('{fname}.docx','{fname}.pdf')
