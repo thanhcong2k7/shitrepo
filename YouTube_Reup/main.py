@@ -1,7 +1,7 @@
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import json
-apikey = 'AIzaSyBaoFpxyCOFBLD91lzsfBnF0D-Q5IREpa8' #API Key
+apikey = 'AIzaSyBaoFpxyCOFBLD91lzsfBnF0D-Q5IREpa8'
 playlist_id = ''
 service = build('youtube', 'v3', developerKey=apikey)
 
